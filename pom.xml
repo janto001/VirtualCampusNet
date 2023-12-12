@@ -11,8 +11,8 @@
 	<groupId>com.quasarix</groupId>
 	<artifactId>virtual_campus</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>VirtualCampusNet</name>
-	<description>Project for cnnectiing peoples</description>
+	<name>virtual_campus</name>
+	<description>Project for connecting peoples</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
