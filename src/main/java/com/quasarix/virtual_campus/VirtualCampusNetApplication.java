@@ -1,4 +1,4 @@
-package com.schoolmates.VirtualCampusNet;
+package com.quasarix.virtual_campus;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
