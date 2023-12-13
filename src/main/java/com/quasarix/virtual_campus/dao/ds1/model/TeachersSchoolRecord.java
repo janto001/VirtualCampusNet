@@ -23,8 +23,6 @@
  */
 package com.quasarix.virtual_campus.dao.ds1.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -59,10 +57,10 @@ public class TeachersSchoolRecord {
 	private Integer schoolLastYear;
 
 	@Column(name = "teached_division_Ids", columnDefinition = "JSON", nullable = false)
-	private JsonNode teachedDivisionIds;
-
+	private String teachedDivisionIds;
+	
 	@Column(name = "teached_class_Ids", columnDefinition = "JSON", nullable = false)
-	private JsonNode teachedClassIds;
+	private String teachedClassIds;
 
 	@Column(name = "type")
 	private Integer type;

@@ -47,7 +47,7 @@ import jakarta.persistence.EntityManagerFactory;
 @Configuration
 @EnableJpaRepositories( 
 		  basePackages = "com.quasarix.virtual_campus.dao.ds2.repository", 
-		  entityManagerFactoryRef = "ds2ManagerFactory",
+		  entityManagerFactoryRef = "ds2EntityManagerFactory",
 		  transactionManagerRef = "ds2TransactionManager")
 public class DataSource2Config {
 	@Bean(name = "ds2DataSourceProperties")

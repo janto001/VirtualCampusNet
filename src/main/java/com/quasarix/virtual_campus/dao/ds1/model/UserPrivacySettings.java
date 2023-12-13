@@ -23,8 +23,6 @@
  */
 package com.quasarix.virtual_campus.dao.ds1.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -47,10 +45,10 @@ public class UserPrivacySettings {
 	private int userId;
 
 	@Column(name = "public_fields", columnDefinition = "JSON")
-	private JsonNode publicFields;
-
+	private String publicFields;
+	
 	@Column(name = "private_fields", columnDefinition = "JSON")
-	private JsonNode privateFields;
+	private String privateFields;
 
 	@OneToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
