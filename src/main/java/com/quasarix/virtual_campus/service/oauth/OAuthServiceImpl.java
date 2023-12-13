@@ -23,11 +23,14 @@
  */
 package com.quasarix.virtual_campus.service.oauth;
 
+import org.springframework.stereotype.Service;
+
 import com.quasarix.virtual_campus.dto.login.LoginResponse;
 
 /**
  * @author anto.jayaraj
  */
+@Service
 public class OAuthServiceImpl implements OAuthService{
 
 	@Override
