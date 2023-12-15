@@ -1,5 +1,5 @@
 /**
- * Filename: RolePermission.java
+ * Filename: UserPermissionRepository.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,46 +21,16 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.dao.ds1.repository;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 
 /**
  * @author anto.jayaraj
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "role_permission")
-public class RolePermission {
+public interface UserPermissionRepository extends JpaRepository<RolePermission, Integer>{
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "Id")
-	private Long id;
-
-	@Column(name = "role_id")
-	private Long roleId;
-
-	@Column(name = "permission_id")
-	private Long permissionId;
-
-	@ManyToOne
-	@JoinColumn(name = "permission_id", insertable = false, updatable = false)
-	private UserPermission userPermission;
-
-	@ManyToOne
-	@JoinColumn(name = "role_id", insertable = false, updatable = false)
-	private UserRole userRole;
 }
 

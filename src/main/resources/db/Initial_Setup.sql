@@ -61,14 +61,20 @@ CREATE TABLE IF NOT EXISTS `professional_experience` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Professional_Experience';
 
 
-CREATE TABLE IF NOT EXISTS `role_permission` (
-  `role_id` int NOT NULL,
-  `permission_id` int NOT NULL,
-  PRIMARY KEY (`role_id`,`permission_id`) USING BTREE,
-  KEY `role_permission_ibfk_1` (`permission_id`) USING BTREE,
-  CONSTRAINT `FK_role_permission_user_permission` FOREIGN KEY (`permission_id`) REFERENCES `user_permission` (`permission_id`),
-  CONSTRAINT `FK_role_permission_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `role_permission` (
+	`Id` INT(10) NOT NULL AUTO_INCREMENT,
+	`role_id` INT(10) NOT NULL,
+	`permission_id` INT(10) NOT NULL,
+	PRIMARY KEY (`Id`) USING BTREE,
+	UNIQUE INDEX `role_id_permission_id` (`role_id`, `permission_id`) USING BTREE,
+	INDEX `FK_role_permission_user_permission` (`permission_id`) USING BTREE,
+	CONSTRAINT `FK_role_permission_user_permission` FOREIGN KEY (`permission_id`) REFERENCES `user_permission` (`permission_id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+	CONSTRAINT `FK_role_permission_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`role_id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+;
+
 
 
 CREATE TABLE IF NOT EXISTS `school_details` (
