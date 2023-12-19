@@ -1,5 +1,5 @@
 /**
- * Filename: LoginResponse.java
+ * Filename: AuthService.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,27 +21,28 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dto.login;
+package com.quasarix.virtual_campus.service.auth;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import lombok.Getter;
-import lombok.Setter;
+import com.quasarix.virtual_campus.dto.login.LoginRequest;
+import com.quasarix.virtual_campus.dto.login.LoginResponse;
+import com.quasarix.virtual_campus.dto.login.OtpRequest;
+import com.quasarix.virtual_campus.dto.login.OtpResponse;
+import com.quasarix.virtual_campus.dto.login.SignupRequest;
 
 /**
  * @author anto.jayaraj
  */
-@Getter
-@Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoginResponse {
-	private String token;
-    private String type = "Bearer";
-    private List<String> grantList;
-    private boolean success;
-    private String statusCode;
-    private String message;
+public interface AuthService {
+	public LoginResponse populateLoginResponse(LoginRequest loginRequest);
+
+	public LoginResponse populateSignupResponse(SignupRequest signupRequest);
+
+	public OtpResponse sendEmailOtp(OtpRequest otpRequest);
+
+	public OtpResponse sendMsisdnOtp(OtpRequest otpRequest);
+
+	public OtpResponse validateEmailOtp(OtpRequest otpRequest);
+
+	public OtpResponse validateMsisdnOtp(OtpRequest otpRequest);
 }
 

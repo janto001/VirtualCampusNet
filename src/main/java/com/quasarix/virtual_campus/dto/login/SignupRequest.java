@@ -1,5 +1,5 @@
 /**
- * Filename: LoginResponse.java
+ * Filename: SignUpRequest.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -23,10 +23,7 @@
  */
 package com.quasarix.virtual_campus.dto.login;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,13 +32,21 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoginResponse {
-	private String token;
-    private String type = "Bearer";
-    private List<String> grantList;
-    private boolean success;
-    private String statusCode;
-    private String message;
+public class SignupRequest {
+	@NotBlank
+	private String userame;
+	@NotBlank
+	private String firstName;
+	@NotBlank
+	private String LastName;
+	@NotBlank
+	private String password;
+	@NotBlank
+	private String birthDate;
+	@NotBlank
+	private String gender;
+	private String email;
+	private String msisdn;
+	private String authentication;
 }
 

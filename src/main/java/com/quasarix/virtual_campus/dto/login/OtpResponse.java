@@ -1,5 +1,5 @@
 /**
- * Filename: LoginResponse.java
+ * Filename: OtpResponse.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -23,8 +23,6 @@
  */
 package com.quasarix.virtual_campus.dto.login;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
@@ -36,12 +34,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoginResponse {
-	private String token;
-    private String type = "Bearer";
-    private List<String> grantList;
-    private boolean success;
-    private String statusCode;
-    private String message;
+public class OtpResponse {
+	private boolean success;
+	private String message;
+	private String statusCode;
+	private String authentication;
 }
 
