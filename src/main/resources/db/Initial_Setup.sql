@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS `company_category` (
   `company_category_id` int NOT NULL AUTO_INCREMENT,
   `company_category_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
@@ -25,8 +24,8 @@ CREATE TABLE IF NOT EXISTS `education_division` (
 
 
 CREATE TABLE IF NOT EXISTS `higher_education_details` (
-  `education_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `education_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
   `university_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `institution_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `degree` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
@@ -34,16 +33,16 @@ CREATE TABLE IF NOT EXISTS `higher_education_details` (
   `graduation_year` int NOT NULL,
   `school_id` int NOT NULL,
   PRIMARY KEY (`education_id`) USING BTREE,
-  KEY `FK_higher_education_details_user_profile` (`user_id`) USING BTREE,
   KEY `FK_higher_education_details_school_details` (`school_id`) USING BTREE,
+  KEY `FK_higher_education_details_user_profile` (`user_id`),
   CONSTRAINT `FK_higher_education_details_school_details` FOREIGN KEY (`school_id`) REFERENCES `school_details` (`school_id`),
   CONSTRAINT `FK_higher_education_details_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Higher_Education_Details';
 
 
 CREATE TABLE IF NOT EXISTS `professional_experience` (
-  `experience_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `experience_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
   `company_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `position` varchar(100) DEFAULT NULL,
   `company_category_id` int NOT NULL,
@@ -53,28 +52,24 @@ CREATE TABLE IF NOT EXISTS `professional_experience` (
   `school_id` int NOT NULL,
   PRIMARY KEY (`experience_id`) USING BTREE,
   KEY `FK_professional_experience_company_category` (`company_category_id`),
-  KEY `FK_professional_experience_user_profile` (`user_id`) USING BTREE,
   KEY `FK_professional_experience_school_details` (`school_id`) USING BTREE,
+  KEY `FK_professional_experience_user_profile` (`user_id`),
   CONSTRAINT `FK_professional_experience_company_category` FOREIGN KEY (`company_category_id`) REFERENCES `company_category` (`company_category_id`),
   CONSTRAINT `FK_professional_experience_school_details` FOREIGN KEY (`school_id`) REFERENCES `school_details` (`school_id`),
   CONSTRAINT `FK_professional_experience_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Professional_Experience';
 
 
-CREATE TABLE `role_permission` (
-	`Id` INT(10) NOT NULL AUTO_INCREMENT,
-	`role_id` INT(10) NOT NULL,
-	`permission_id` INT(10) NOT NULL,
-	PRIMARY KEY (`Id`) USING BTREE,
-	UNIQUE INDEX `role_id_permission_id` (`role_id`, `permission_id`) USING BTREE,
-	INDEX `FK_role_permission_user_permission` (`permission_id`) USING BTREE,
-	CONSTRAINT `FK_role_permission_user_permission` FOREIGN KEY (`permission_id`) REFERENCES `user_permission` (`permission_id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
-	CONSTRAINT `FK_role_permission_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`role_id`) ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-COLLATE='utf8mb4_0900_ai_ci'
-ENGINE=InnoDB
-;
-
+CREATE TABLE IF NOT EXISTS `role_permission` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `role_id` int NOT NULL,
+  `permission_id` int NOT NULL,
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `role_id_permission_id` (`role_id`,`permission_id`),
+  KEY `FK_role_permission_user_permission` (`permission_id`),
+  CONSTRAINT `FK_role_permission_user_permission` FOREIGN KEY (`permission_id`) REFERENCES `user_permission` (`permission_id`),
+  CONSTRAINT `FK_role_permission_user_role` FOREIGN KEY (`role_id`) REFERENCES `user_role` (`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 CREATE TABLE IF NOT EXISTS `school_details` (
@@ -89,8 +84,8 @@ CREATE TABLE IF NOT EXISTS `school_details` (
 
 
 CREATE TABLE IF NOT EXISTS `teachers_school_record` (
-  `record_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int DEFAULT NULL,
+  `record_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
   `joined_year` int DEFAULT NULL,
   `school_last_year` int DEFAULT NULL,
   `teached_division_Ids` json NOT NULL COMMENT 'list of division ids',
@@ -100,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `teachers_school_record` (
   PRIMARY KEY (`record_id`) USING BTREE,
   KEY `FK_teachers_school_record_teachers_type` (`type`),
   KEY `FK_teachers_school_record_school_details` (`school_id`),
-  KEY `FK_teachers_school_record_user_profile` (`user_id`) USING BTREE,
+  KEY `FK_teachers_school_record_user_profile` (`user_id`),
   CONSTRAINT `FK_teachers_school_record_school_details` FOREIGN KEY (`school_id`) REFERENCES `school_details` (`school_id`),
   CONSTRAINT `FK_teachers_school_record_teachers_type` FOREIGN KEY (`type`) REFERENCES `teachers_type` (`type_id`),
   CONSTRAINT `FK_teachers_school_record_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
@@ -115,8 +110,8 @@ CREATE TABLE IF NOT EXISTS `teachers_type` (
 
 
 CREATE TABLE IF NOT EXISTS `user_login` (
-  `login_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
+  `login_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
   `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `last_login` timestamp NULL DEFAULT NULL,
@@ -124,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `user_login` (
   `is_locked` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`login_id`) USING BTREE,
   UNIQUE KEY `User_name` (`user_name`) USING BTREE,
-  KEY `FK_user_login_user_profile` (`user_id`) USING BTREE,
+  KEY `FK_user_login_user_profile` (`user_id`),
   CONSTRAINT `FK_user_login_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User_Login';
 
@@ -138,17 +133,17 @@ CREATE TABLE IF NOT EXISTS `user_permission` (
 
 
 CREATE TABLE IF NOT EXISTS `user_privacy_settings` (
-  `user_id` int NOT NULL,
+  `user_id` bigint NOT NULL,
   `public_fields` json DEFAULT NULL COMMENT 'list of fields that the user has set as public',
   `private_fields` json DEFAULT NULL,
   PRIMARY KEY (`user_id`) USING BTREE,
-  CONSTRAINT `FK__user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
+  CONSTRAINT `FK_user_privacy_settings_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='user_Privacy_Settings';
 
 
 CREATE TABLE IF NOT EXISTS `user_profile` (
-  `user_id` int NOT NULL,
-  `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `user_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `first_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `last_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
@@ -161,13 +156,10 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
   `registration_date` timestamp NULL DEFAULT (now()),
   `last_login` timestamp NULL DEFAULT NULL,
   `user_role_Id` int NOT NULL,
-  `school_id` int NOT NULL,
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE KEY `Email` (`email`) USING BTREE,
   UNIQUE KEY `PhoneNumber` (`phone_number`) USING BTREE,
   KEY `FK_userprofile_userrole` (`user_role_Id`) USING BTREE,
-  KEY `FK_user_profile_school_details` (`school_id`) USING BTREE,
-  CONSTRAINT `FK_user_profile_school_details` FOREIGN KEY (`school_id`) REFERENCES `school_details` (`school_id`),
   CONSTRAINT `FK_user_profile_user_role` FOREIGN KEY (`user_role_Id`) REFERENCES `user_role` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -196,8 +188,8 @@ CREATE TABLE IF NOT EXISTS `user_role_validation` (
 
 
 CREATE TABLE IF NOT EXISTS `user_school_record` (
-  `record_id` int NOT NULL,
-  `user_id` int NOT NULL,
+  `record_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
   `enrollment_year` int NOT NULL,
   `school_last_year` int NOT NULL,
   `last_class_id` int NOT NULL,
@@ -208,10 +200,10 @@ CREATE TABLE IF NOT EXISTS `user_school_record` (
   KEY `FK_user_school_record_school_qualification` (`last_class_id`) USING BTREE,
   KEY `FK_school_record_user_profile` (`user_id`) USING BTREE,
   KEY `FK_user_school_record_school_details` (`school_id`) USING BTREE,
-  CONSTRAINT `FK_school_record_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`),
   CONSTRAINT `FK_user_school_record_school_details` FOREIGN KEY (`school_id`) REFERENCES `school_details` (`school_id`),
   CONSTRAINT `FK_user_school_record_school_division` FOREIGN KEY (`school_division_Id`) REFERENCES `education_division` (`division_id`),
-  CONSTRAINT `FK_user_school_record_school_qualification` FOREIGN KEY (`last_class_id`) REFERENCES `education_class_details` (`class_id`)
+  CONSTRAINT `FK_user_school_record_school_qualification` FOREIGN KEY (`last_class_id`) REFERENCES `education_class_details` (`class_id`),
+  CONSTRAINT `FK_user_school_record_user_profile` FOREIGN KEY (`user_id`) REFERENCES `user_profile` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

@@ -33,6 +33,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,60 +46,55 @@ import lombok.Setter;
 @Entity
 @Table(name = "user_profile")
 public class UserProfile {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private int userId;
+	@Column(name = "user_name")
+	private String userName;
 
-    @Column(name = "user_name", length = 50, nullable = false)
-    private String userName;
+	@Column(name = "first_name", nullable = false)
+	private String firstName;
 
-    @Column(name = "first_name", length = 50, nullable = false)
-    private String firstName;
+	@Column(name = "last_name", nullable = false)
+	private String lastName;
 
-    @Column(name = "last_name", length = 50, nullable = false)
-    private String lastName;
+	@Column(name = "email", unique = true)
+	private String email;
 
-    @Column(name = "email", length = 100, unique = true, nullable = true)
-    private String email;
+	@Column(name = "phone_number", unique = true)
+	private String phoneNumber;
 
-    @Column(name = "phone_number", length = 20, unique = true, nullable = true)
-    private String phoneNumber;
+	@Column(name = "birth_date", nullable = false)
+	@Temporal(TemporalType.DATE)
+	private Date birthDate;
 
-    @Column(name = "birth_date", nullable = false)
-    private Date birthDate;
+	@Column(name = "gender", nullable = false)
+	private String gender;
 
-    @Column(name = "gender", length = 10, nullable = false)
-    private String gender;
+	@Column(name = "bio", columnDefinition = "TEXT")
+	private String bio;
 
-    @Column(name = "bio", columnDefinition = "TEXT", nullable = true)
-    private String bio;
+	@Column(name = "profile_picture_url")
+	private String profilePictureUrl;
 
-    @Column(name = "profile_picture_url", length = 255, nullable = true)
-    private String profilePictureUrl;
+	@Column(name = "cover_photo_url")
+	private String coverPhotoUrl;
 
-    @Column(name = "cover_photo_url", length = 255, nullable = true)
-    private String coverPhotoUrl;
+	@Column(name = "registration_date")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date registrationDate;
 
-    @Column(name = "registration_date", nullable = true)
-    private Date registrationDate;
+	@Column(name = "last_login")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastLogin;
 
-    @Column(name = "last_login", nullable = true)
-    private Date lastLogin;
+	@Column(name = "user_role_Id", nullable = false)
+	private Integer userRoleId;
 
-    @Column(name = "user_role_Id", nullable = false)
-    private int userRoleId;
-
-    @Column(name = "school_id", nullable = false)
-    private int schoolId;
-
-    @ManyToOne
-    @JoinColumn(name = "school_id", referencedColumnName = "School_ID", insertable = false, updatable = false)
-    private SchoolDetails schoolDetails;
-
-    @ManyToOne
-    @JoinColumn(name = "user_role_Id", referencedColumnName = "Role_ID", insertable = false, updatable = false)
-    private UserRole userRole;
+	@ManyToOne
+	@JoinColumn(name = "user_role_Id", insertable = false, updatable = false)
+	private UserRole userRole;
 }
 

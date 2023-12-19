@@ -43,12 +43,12 @@ import lombok.Setter;
 @Table(name = "higher_education_details")
 public class HigherEducationDetails {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "education_id")
-	private int educationId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "education_id", nullable = false)
+    private Long educationId;
 
-	@Column(name = "user_id")
-	private int userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
 	@Column(name = "university_name", length = 100, nullable = false)
 	private String universityName;
