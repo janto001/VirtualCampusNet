@@ -30,14 +30,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.quasarix.virtual_campus.dto.login.LoginRequest;
 import com.quasarix.virtual_campus.dto.login.LoginResponse;
 import com.quasarix.virtual_campus.dto.login.OtpRequest;
 import com.quasarix.virtual_campus.dto.login.OtpResponse;
 import com.quasarix.virtual_campus.dto.login.SignupRequest;
 import com.quasarix.virtual_campus.service.auth.AuthService;
-
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 	@Autowired
 	private AuthService authService;
-	
+
 	@PostMapping("/login")
 	public ResponseEntity<?> authenticateUser(@Valid
 	@RequestBody
@@ -72,7 +70,7 @@ public class AuthController {
 	public ResponseEntity<?> createUser(@Valid
 	@RequestBody
 	SignupRequest signUpRequest) {
-		log.debug("signup request|userName:{}", signUpRequest.getUserame());
+		log.debug("signup request|userName:{}", signUpRequest.getUsername());
 		LoginResponse loginResponse = authService.populateSignupResponse(signUpRequest);
 		if (loginResponse.isSuccess()) {
 			return new ResponseEntity<>(loginResponse, HttpStatus.CREATED);
@@ -81,7 +79,6 @@ public class AuthController {
 			return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
 
 	@PostMapping("/sendEmailOtp")
 	public ResponseEntity<?> sendEmailOtp(@Valid
@@ -96,7 +93,7 @@ public class AuthController {
 			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@PostMapping("/validateEmailOtp")
 	public ResponseEntity<?> validateEmailOtp(@Valid
 	@RequestBody
@@ -110,7 +107,7 @@ public class AuthController {
 			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@PostMapping("/sendMsisdnOtp")
 	public ResponseEntity<?> sendMsisdnOtp(@Valid
 	@RequestBody
@@ -124,7 +121,7 @@ public class AuthController {
 			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@PostMapping("/validateMsisdnOtp")
 	public ResponseEntity<?> validateMsisdnOtp(@Valid
 	@RequestBody
@@ -138,8 +135,6 @@ public class AuthController {
 			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	
 
 }
 

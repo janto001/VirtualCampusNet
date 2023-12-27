@@ -24,15 +24,21 @@
 package com.quasarix.virtual_campus.security.services;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.quasarix.virtual_campus.cache.RolePermissionCache;
+import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
+import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -43,31 +49,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Setter
-public class UserDetailsImpl implements UserDetails , OAuth2User{
+public class UserDetailsImpl implements UserDetails, OidcUser {
 
 	private static final long serialVersionUID = 1L;
-    private Long id;
+	private Long id;
+	private String username;
+	private String email;
+	private String gender;
+	private String phoneNumber;
+	private int isLocked;
+	@JsonIgnore
+	private String password;
+	private Collection<? extends GrantedAuthority> authorities;
+	private Map<String, Object> attributes;
+	private OidcUser oidcUser;
 
-    private String username;
+	public UserDetailsImpl() {
+	}
 
-    private String email;
+	public UserDetailsImpl(OidcUser oidcUser) {
+		System.out.println(oidcUser);
+		this.oidcUser = oidcUser;
+		this.email = oidcUser.getEmail();
+		this.username = oidcUser.getName();
+		this.gender = oidcUser.getGender();
+	}
 
-    @JsonIgnore
-    private String password;
-
-    private Collection<? extends GrantedAuthority> authorities;
-    
-    private Map<String, Object> attributes;
-    
-    public UserDetailsImpl(Long id, String username, String email, String password,Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.authorities=authorities;
-    }
-    
-    public UserDetailsImpl(Long id, String username, String email, String password, Collection<? extends GrantedAuthority> authorities,
+	public UserDetailsImpl(Long id, String username, String email, String password, Collection<? extends GrantedAuthority> authorities,
 			Map<String, Object> attributes) {
 		this.id = id;
 		this.username = username;
@@ -76,59 +84,112 @@ public class UserDetailsImpl implements UserDetails , OAuth2User{
 		this.authorities = authorities;
 		this.attributes = attributes;
 	}
-	
+
+	public UserDetailsImpl(Long id, String username, String email, String phoneNumber, int isLocked, String password,
+			Collection<? extends GrantedAuthority> authorities) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+		this.isLocked = isLocked;
+		this.password = password;
+		this.authorities = authorities;
+	}
+
+	public UserDetailsImpl(Long id, String username, int isLocked, String password, Collection<? extends GrantedAuthority> authorities) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.isLocked = isLocked;
+		this.password = password;
+		this.authorities = authorities;
+	}
+
+	public static UserDetails build(UserLogin userProfile) {
+		log.debug("Setup userdetailsImpl : ", userProfile.getUserName());
+		List<RolePermission> rolepermission = RolePermissionCache.getRoleAndPermissionCache();
+		Set<String> permisionForRoles = new HashSet<String>();
+		rolepermission.forEach(value -> {
+			if (value.getUserRole().getRoleId() == userProfile.getUserProfile().getUserRoleId()) {
+				permisionForRoles.add(value.getUserPermission().getPermissionName());
+			}
+		});
+		List<GrantedAuthority> authorities = permisionForRoles.stream()
+				.map(grantList -> new SimpleGrantedAuthority("ROLE_" + grantList))
+				.collect(Collectors.toList());
+		return new UserDetailsImpl(userProfile.getUserId(), userProfile.getUserName(), userProfile.getIsLocked(), userProfile.getPassword(),
+				authorities);
+	}
+
 	@Override
 	public Map<String, Object> getAttributes() {
-		// TODO Auto-generated method stub
-		return null;
+		return oidcUser.getAttributes();
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.username;
 	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
+
+		return this.authorities;
 	}
 
 	@Override
 	public String getPassword() {
-		// TODO Auto-generated method stub
-		return null;
+
+		return this.password;
 	}
 
 	@Override
 	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.username;
 	}
 
 	@Override
 	public boolean isAccountNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
-		// TODO Auto-generated method stub
-		return false;
+
+		if (isLocked == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+		// return this.isLocked;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
+		// return this.isLocked;
+	}
+
+	@Override
+	public Map<String, Object> getClaims() {
+		return oidcUser.getClaims();
+	}
+
+	@Override
+	public OidcUserInfo getUserInfo() {
+		return oidcUser.getUserInfo();
+	}
+
+	@Override
+	public OidcIdToken getIdToken() {
+		return oidcUser.getIdToken();
 	}
 
 }

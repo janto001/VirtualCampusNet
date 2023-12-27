@@ -1,5 +1,5 @@
 /**
- * Filename: UserDetailsServiceImpl.java
+ * Filename: SendOTP.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,42 +21,56 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.security.services;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
-import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+package com.quasarix.virtual_campus.service.auth;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Slf4j
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLEncoder;
+import javax.net.ssl.HttpsURLConnection;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
-
-	@Autowired
-	UserLoginRepository userLoginRepository;
-
-	@Override
-	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+@Slf4j
+public class SendOTP {
+	@Value("${com.quasarix.virtual_campus.service.SendoTP.Key}")
+	private String autherizationKey;
+	public void sendOTP(String message, String number) throws Exception {
+System.out.println(autherizationKey);
 		try {
-			UserLogin userProfile = userLoginRepository.findUserByUserName(username);
-			log.debug("load user by username :{}", username);
-			return UserDetailsImpl.build(userProfile);
+			message = URLEncoder.encode(message, "UTF-8"); // Important Step
+			String myUrl = "https://www.fast2sms.com/dev/bulkV2?authorization=" + autherizationKey + "&route=otp&variables_values=" + message
+					+ "&flash=0&numbers=" + number;
+			URL url = new URL(myUrl);
+			HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			con.setRequestProperty("User-Agent", "Mozilla/5.0");
+			con.setRequestProperty("cache-control", "no-cache");
+			StringBuffer response = new StringBuffer();
+			BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			while (true) {
+				String line = br.readLine();
+				if (line == null) {
+					break;
+				}
+				response.append(line);
+			}
+			log.debug("OTP sent successfully to the mobile :" + number);
+			log.info("OTP sent successfully.");
 		}
-		catch (Exception ex) {
-			throw new UsernameNotFoundException(ex.getMessage());
+		catch (Exception e) {
+			
+			log.debug("Failed to send OTP to the number :" + number);
+			log.info("Failed to send OTP.");
+			log.warn("Failed to send OTP.");
+			throw e;
 		}
 	}
 }

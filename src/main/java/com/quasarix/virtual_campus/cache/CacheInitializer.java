@@ -1,5 +1,5 @@
 /**
- * Filename: UserDetailsServiceImpl.java
+ * Filename: CacheInitializer.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,43 +21,45 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.security.services;
+package com.quasarix.virtual_campus.cache;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
+import com.quasarix.virtual_campus.dao.ds1.repository.RolePermissionRepository;
 import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
-import lombok.Getter;
-import lombok.Setter;
+import com.quasarix.virtual_campus.dao.ds1.repository.UserProfileRepository;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
+@Component
 @Slf4j
-@Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class CacheInitializer {
 
+	@Autowired
+	UserProfileRepository userProfileRepository;
+	
 	@Autowired
 	UserLoginRepository userLoginRepository;
 
-	@Override
-	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		try {
-			UserLogin userProfile = userLoginRepository.findUserByUserName(username);
-			log.debug("load user by username :{}", username);
-			return UserDetailsImpl.build(userProfile);
-		}
-		catch (Exception ex) {
-			throw new UsernameNotFoundException(ex.getMessage());
-		}
+	@Autowired
+	RolePermissionRepository rolePermissionRepository;
+	
+	@EventListener(ContextRefreshedEvent.class)
+	public void run() {
+
+		List<RolePermission> rolepermission = rolePermissionRepository.findAll();
+		RolePermissionCache.setRoleAndPermissionCache(rolepermission);
+		log.info("Values are added to th rolepermissionCache");
 	}
+
 }
 

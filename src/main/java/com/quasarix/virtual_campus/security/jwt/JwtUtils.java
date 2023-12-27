@@ -49,11 +49,31 @@ public class JwtUtils {
 
 	@Value("${vcn.jwtExpirationMs}")
 	private int jwtExpirationMs;
-	
+
 	public String generateJwtToken(Authentication authentication) {
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 		return Jwts.builder()
 				.setSubject((userPrincipal.getUsername()))
+				.setIssuedAt(new Date())
+				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.compact();
+	}
+
+	public String generateJwtToken(UserDetailsImpl oauthUser) {
+
+		return Jwts.builder()
+				.setSubject(oauthUser.getEmail())
+				.setIssuedAt(new Date())
+				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.compact();
+	}
+
+	public String generateJwtToken(String mail) {
+
+		return Jwts.builder()
+				.setSubject(mail)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)
