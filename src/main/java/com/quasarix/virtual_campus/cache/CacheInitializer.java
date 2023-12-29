@@ -23,17 +23,19 @@
  */
 package com.quasarix.virtual_campus.cache;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
 import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
+import com.quasarix.virtual_campus.dao.ds1.repository.ConfigParameterrepository;
 import com.quasarix.virtual_campus.dao.ds1.repository.RolePermissionRepository;
-import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
-import com.quasarix.virtual_campus.dao.ds1.repository.UserProfileRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,20 +47,36 @@ import lombok.extern.slf4j.Slf4j;
 public class CacheInitializer {
 
 	@Autowired
-	UserProfileRepository userProfileRepository;
+	private RolePermissionRepository rolePermissionRepository;
 	
 	@Autowired
-	UserLoginRepository userLoginRepository;
-
-	@Autowired
-	RolePermissionRepository rolePermissionRepository;
+	private ConfigParameterrepository configParameterrepository;
 	
+	@SuppressWarnings("static-access")
 	@EventListener(ContextRefreshedEvent.class)
 	public void run() {
 
 		List<RolePermission> rolepermission = rolePermissionRepository.findAll();
-		RolePermissionCache.setRoleAndPermissionCache(rolepermission);
-		log.info("Values are added to th rolepermissionCache");
+		if (rolepermission.isEmpty()) {
+			log.debug("Roles and permissions are not found in role_permission table");
+		}
+		else {
+			AppCache.rolePermissionCache.setRoleAndPermissionCache(rolepermission);
+			log.info("Roles and permissions are added to the rolepermissionCache,  : " + RolePermissionCache.class);
+		}
+		List<ConfigParameter> globalVariables = configParameterrepository.findAll();
+		if (!globalVariables.isEmpty()) {
+			Map<String, ConfigParameter> setValuesToMap = new HashMap<String, ConfigParameter>();
+			globalVariables.forEach(value -> {
+				setValuesToMap.put(value.getParameterName(), value);
+			});
+			AppCache.globalCache.setGlobalVariableCache(setValuesToMap);
+			log.info("Global variables are added to the Global variable cache, : " + GlobalVariableCache.class);
+		}
+		else {
+			log.warn("Unable to add Global variables to the Global variable cache, : " + GlobalVariableCache.class);
+		}
+
 	}
 
 }

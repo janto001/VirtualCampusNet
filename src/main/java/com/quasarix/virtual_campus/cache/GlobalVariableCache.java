@@ -1,5 +1,5 @@
 /**
- * Filename: UserDetailsServiceImpl.java
+ * Filename: GlobalVariableCache.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,43 +21,29 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.security.services;
+package com.quasarix.virtual_campus.cache;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
-import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
+import org.springframework.stereotype.Component;
+import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
+
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Slf4j
-@Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+@Component
+public class GlobalVariableCache {
 
-	@Autowired
-	UserLoginRepository userLoginRepository;
+	private static Map<String, ConfigParameter> globalVariableCache;
 
-	@Override
-	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,NullPointerException {
-		try {
-			UserLogin userProfile = userLoginRepository.findUserByUserName(username);
-			log.debug("load user by username :{}", username);
-			return UserDetailsImpl.build(userProfile);
-		}
-		catch (Exception ex) {
-			throw new UsernameNotFoundException(ex.getMessage());
-		}
+	public static Map<String, ConfigParameter> getGlobalVariableCache() {
+		return globalVariableCache;
 	}
+
+	public static void setGlobalVariableCache(Map<String, ConfigParameter> globalVariableCache) {
+		GlobalVariableCache.globalVariableCache = globalVariableCache;
+	}
+
 }
 

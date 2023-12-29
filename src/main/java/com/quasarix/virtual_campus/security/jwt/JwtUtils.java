@@ -24,13 +24,10 @@
 package com.quasarix.virtual_campus.security.jwt;
 
 import java.util.Date;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-
+import com.quasarix.virtual_campus.cache.AppCache;
 import com.quasarix.virtual_campus.security.services.UserDetailsImpl;
-
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -44,49 +41,56 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class JwtUtils {
-	@Value("${vcn.jwtSecret}")
-	private String jwtSecret;
 
-	@Value("${vcn.jwtExpirationMs}")
-	private int jwtExpirationMs;
-
+	@SuppressWarnings("static-access")
 	public String generateJwtToken(Authentication authentication) {
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 		return Jwts.builder()
 				.setSubject((userPrincipal.getUsername()))
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.setExpiration(new Date(System.currentTimeMillis()
+						+ Integer.parseInt(AppCache.globalCache.getGlobalVariableCache().get("jwtExperyTime").getParameterValue())))
+				.signWith(SignatureAlgorithm.HS512, AppCache.globalCache.getGlobalVariableCache().get("jwtSecret").getParameterValue())
 				.compact();
 	}
 
+	@SuppressWarnings("static-access")
 	public String generateJwtToken(UserDetailsImpl oauthUser) {
 
 		return Jwts.builder()
 				.setSubject(oauthUser.getEmail())
 				.setIssuedAt(new Date())
-				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.setExpiration(new Date((new Date()).getTime()
+						+ Integer.parseInt(AppCache.globalCache.getGlobalVariableCache().get("jwtExperyTime").getParameterValue())))
+				.signWith(SignatureAlgorithm.HS512, AppCache.globalCache.getGlobalVariableCache().get("jwtSecret").getParameterValue())
 				.compact();
 	}
 
+	@SuppressWarnings("static-access")
 	public String generateJwtToken(String mail) {
 
 		return Jwts.builder()
 				.setSubject(mail)
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-				.signWith(SignatureAlgorithm.HS512, jwtSecret)
+				.setExpiration(new Date(System.currentTimeMillis()
+						+ Integer.parseInt(AppCache.globalCache.getGlobalVariableCache().get("jwtExperyTime").getParameterValue())))
+				.signWith(SignatureAlgorithm.HS512, AppCache.globalCache.getGlobalVariableCache().get("jwtSecret").getParameterValue())
 				.compact();
 	}
 
+	@SuppressWarnings("static-access")
 	public String getUserNameFromJwtToken(String token) {
-		return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+		return Jwts.parser()
+				.setSigningKey(AppCache.globalCache.getGlobalVariableCache().get("jwtSecret").getParameterValue())
+				.parseClaimsJws(token)
+				.getBody()
+				.getSubject();
 	}
 
+	@SuppressWarnings("static-access")
 	public boolean validateJwtToken(String authToken) {
 		try {
-			Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+			Jwts.parser().setSigningKey(AppCache.globalCache.getGlobalVariableCache().get("jwtSecret").getParameterValue()).parseClaimsJws(authToken);
 			return true;
 		}
 		catch (MalformedJwtException e) {

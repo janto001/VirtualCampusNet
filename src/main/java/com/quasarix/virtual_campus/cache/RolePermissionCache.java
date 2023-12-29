@@ -24,13 +24,12 @@
 package com.quasarix.virtual_campus.cache;
 
 import java.util.List;
-import org.springframework.stereotype.Component;
 import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 
 /**
  * @author ARUN A J
  */
-@Component
+
 public class RolePermissionCache {
 
 	private static List<RolePermission> roleAndPermissionCache;
@@ -43,5 +42,6 @@ public class RolePermissionCache {
 		RolePermissionCache.roleAndPermissionCache = roleAndPermissionCache;
 	}
 
+	
 }
 

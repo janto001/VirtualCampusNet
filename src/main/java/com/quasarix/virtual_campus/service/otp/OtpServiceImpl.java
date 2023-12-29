@@ -1,5 +1,5 @@
 /**
- * Filename: UserDetailsServiceImpl.java
+ * Filename: OtpServiceImplementation.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,43 +21,65 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.security.services;
+package com.quasarix.virtual_campus.service.otp;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
-import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
-import lombok.Getter;
-import lombok.Setter;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
 
+
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
+
 @Slf4j
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class OtpServiceImpl implements OtpService {
+	
+	private static final Integer EXPIRE_MINS = 2;
+	private LoadingCache<String, Integer> otpCache;
 
-	@Autowired
-	UserLoginRepository userLoginRepository;
+	public OtpServiceImpl() {
+		super();
+		otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
+			public Integer load(String key) {
+				return 0;
+			}
+		});
+	}
 
 	@Override
-	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,NullPointerException {
+	public int generateOTP(String key) {
+		Random random = new Random();
+		int otp = 100000 + random.nextInt(900000);
+		otpCache.put(key, otp);
+		log.debug("Otp generated for the user : "+key);
+		log.info("Otp generated");
+		return otp;
+	}
+
+	@Override
+	public int getOtp(String key) {
 		try {
-			UserLogin userProfile = userLoginRepository.findUserByUserName(username);
-			log.debug("load user by username :{}", username);
-			return UserDetailsImpl.build(userProfile);
+			log.debug("user "+key+" getting otp from otpCache");
+			return otpCache.get(key);
 		}
-		catch (Exception ex) {
-			throw new UsernameNotFoundException(ex.getMessage());
+		catch (Exception e) {
+			log.debug("Otp not found in the Otp Cache for the user : "+key);
+			log.warn("Unable to find otp for the user : "+key, e.getMessage());
+			return 0;
 		}
 	}
+	
+	public void clearOTP(String key) {
+		log.debug("Remove otp from the otp cache for the user : "+key);
+		otpCache.invalidate(key);
+	}
+
+	
 }
 

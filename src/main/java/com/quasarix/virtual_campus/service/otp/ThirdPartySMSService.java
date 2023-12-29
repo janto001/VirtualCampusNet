@@ -1,5 +1,5 @@
 /**
- * Filename: SendOTP.java
+ * Filename: ThirdPartySMSService.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,57 +21,14 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.service.auth;
+package com.quasarix.virtual_campus.service.otp;
 
 /**
  * @author ARUN A J
  */
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLEncoder;
-import javax.net.ssl.HttpsURLConnection;
+public interface ThirdPartySMSService {
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-
-@Service
-@Slf4j
-public class SendOTP {
-	@Value("${com.quasarix.virtual_campus.service.SendoTP.Key}")
-	private String autherizationKey;
-	public void sendOTP(String message, String number) throws Exception {
-System.out.println(autherizationKey);
-		try {
-			message = URLEncoder.encode(message, "UTF-8"); // Important Step
-			String myUrl = "https://www.fast2sms.com/dev/bulkV2?authorization=" + autherizationKey + "&route=otp&variables_values=" + message
-					+ "&flash=0&numbers=" + number;
-			URL url = new URL(myUrl);
-			HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-			con.setRequestMethod("GET");
-			con.setRequestProperty("User-Agent", "Mozilla/5.0");
-			con.setRequestProperty("cache-control", "no-cache");
-			StringBuffer response = new StringBuffer();
-			BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			while (true) {
-				String line = br.readLine();
-				if (line == null) {
-					break;
-				}
-				response.append(line);
-			}
-			log.debug("OTP sent successfully to the mobile :" + number);
-			log.info("OTP sent successfully.");
-		}
-		catch (Exception e) {
-			
-			log.debug("Failed to send OTP to the number :" + number);
-			log.info("Failed to send OTP.");
-			log.warn("Failed to send OTP.");
-			throw e;
-		}
-	}
+	public void sendSMS(String message, String number) throws Exception;
+	
 }
 
