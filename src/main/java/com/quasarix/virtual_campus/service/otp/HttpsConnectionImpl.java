@@ -1,5 +1,5 @@
 /**
- * Filename: AppCache.java
+ * Filename: HttpsConnectionImpl.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,41 +21,51 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.cache;
+package com.quasarix.virtual_campus.service.otp;
 
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 
-import org.springframework.stereotype.Component;
+import javax.net.ssl.HttpsURLConnection;
 
-import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
-import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author ARUN A J
  */
+@Service
+@Slf4j
+public class HttpsConnectionImpl implements HttpsConnection {
 
-public class AppCache {
-
-	private static Map<String, ConfigParameter> configParameter;
-
-	private static List<RolePermission> rolesAndPermissions;
-
-	public static Map<String, ConfigParameter> getConfigParameter() {
-		return configParameter;
+	@Override
+	public boolean getConnection(String URL) {
+		try {
+		String myUrl = URL;
+		URL url = new URL(myUrl);
+		HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+		con.setRequestMethod("GET");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("cache-control", "no-cache");
+		StringBuffer response = new StringBuffer();
+		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		while (true) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
+			response.append(line);
+		}
+		log.info("OTP send successfully.");
+		log.debug("MSISDN OTP sent successfully | URL : ",url);
+		return true;
 	}
-
-	public static void setConfigParameter(Map<String, ConfigParameter> configParameter) {
-		AppCache.configParameter = configParameter;
+	catch (Exception e) {
+		log.error("Failed to send MSISDN OTP", e);
 	}
-
-	public static List<RolePermission> getRolesAndPermissions() {
-		return rolesAndPermissions;
+		return false;
 	}
-
-	public static void setRolesAndPermissions(List<RolePermission> rolesAndPermissions) {
-		AppCache.rolesAndPermissions = rolesAndPermissions;
-	}
-	
 }
 

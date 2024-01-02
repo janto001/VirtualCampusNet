@@ -14,34 +14,30 @@
  */
 package com.quasarix.virtual_campus.service.otp;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.quasarix.virtual_campus.cache.AppCache;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author ARUN A J
  */
-@Slf4j
 @Service
-public class SmsSendServiceImpl implements ThirdPartySMSService {
+public class SmsSendService {
+	
+	@Autowired
+	private HttpsConnection httpsConnection;
 	private String autherizationKey;
 	private String rootUrl;
 
-	@SuppressWarnings("static-access")
-	@Override
 	public void sendSMS(String message, String number) throws Exception {
 
-		autherizationKey = AppCache.globalCache.getGlobalVariableCache().get("fast2smsAutherisationKey").getParameterValue();
-		rootUrl = AppCache.globalCache.getGlobalVariableCache().get("sendOTPBaseURL").getParameterValue();
+		autherizationKey = AppCache.getConfigParameter().get("fast2smsAutherisationKey").getParameterValue();
+		rootUrl = AppCache.getConfigParameter().get("sendOTPBaseURL").getParameterValue();
 
-		try {
+	
 			message = URLEncoder.encode(message, "UTF-8");
 			List<String> param = new ArrayList<String>();
 			List<String> paramValue = new ArrayList<String>();
@@ -51,32 +47,11 @@ public class SmsSendServiceImpl implements ThirdPartySMSService {
 			paramValue.add(message);
 			param.add("numbers");
 			paramValue.add(number);
-			HttpsURLConnection con = setURL(rootUrl, param, paramValue);
-			con.setRequestMethod("GET");
-			con.setRequestProperty("User-Agent", "Mozilla/5.0");
-			con.setRequestProperty("cache-control", "no-cache");
-			StringBuffer response = new StringBuffer();
-			BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			while (true) {
-				String line = br.readLine();
-				if (line == null) {
-					break;
-				}
-				response.append(line);
-			}
-			log.debug("OTP sent successfully to the mobile :" + number);
-			log.info("OTP sent successfully.");
-		}
-		catch (Exception e) {
-
-			log.debug("Failed to send OTP to the number :" + number);
-			log.info("Failed to send OTP.");
-			throw e;
-		}
-
+			String url = setURL(rootUrl, param, paramValue);
+			httpsConnection.getConnection(url);
 	}
 
-	public HttpsURLConnection setURL(String root, List<String> parameter, List<String> parameterValue) throws Exception {
+	public String setURL(String root, List<String> parameter, List<String> parameterValue) throws Exception {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(root);
@@ -94,10 +69,7 @@ public class SmsSendServiceImpl implements ThirdPartySMSService {
 				sb.append("&");
 			}
 		}
-		String myUrl = sb.toString();
-		URL url = new URL(myUrl);
-		log.info("Url for send OTP is : " + url);
-		return (HttpsURLConnection) url.openConnection();
+		return sb.toString();
 	}
 
 }

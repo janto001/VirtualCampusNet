@@ -1,5 +1,5 @@
 /**
- * Filename: AppCache.java
+ * Filename: HttpsConnection.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,41 +21,13 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.cache;
-
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
-import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
-import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
+package com.quasarix.virtual_campus.service.otp;
 
 /**
  * @author ARUN A J
  */
+public interface HttpsConnection {
 
-public class AppCache {
-
-	private static Map<String, ConfigParameter> configParameter;
-
-	private static List<RolePermission> rolesAndPermissions;
-
-	public static Map<String, ConfigParameter> getConfigParameter() {
-		return configParameter;
-	}
-
-	public static void setConfigParameter(Map<String, ConfigParameter> configParameter) {
-		AppCache.configParameter = configParameter;
-	}
-
-	public static List<RolePermission> getRolesAndPermissions() {
-		return rolesAndPermissions;
-	}
-
-	public static void setRolesAndPermissions(List<RolePermission> rolesAndPermissions) {
-		AppCache.rolesAndPermissions = rolesAndPermissions;
-	}
-	
+	public boolean getConnection(String URL);
 }
 

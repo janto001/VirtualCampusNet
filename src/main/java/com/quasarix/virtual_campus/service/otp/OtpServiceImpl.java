@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.quasarix.virtual_campus.cache.AppCache;
+
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -40,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class OtpServiceImpl implements OtpService {
 	
-	private static final Integer EXPIRE_MINS = 2;
+	private static final Integer EXPIRE_MINS = Integer.parseInt(AppCache.getConfigParameter().get("OTPExpireTime").getParameterValue());
 	private LoadingCache<String, Integer> otpCache;
 
 	public OtpServiceImpl() {
@@ -57,26 +59,24 @@ public class OtpServiceImpl implements OtpService {
 		Random random = new Random();
 		int otp = 100000 + random.nextInt(900000);
 		otpCache.put(key, otp);
-		log.debug("Otp generated for the user : "+key);
-		log.info("Otp generated");
+		log.debug("Otp generated | userName:{} ",key);
 		return otp;
 	}
 
 	@Override
 	public int getOtp(String key) {
 		try {
-			log.debug("user "+key+" getting otp from otpCache");
+			log.debug("Getting otp from otpCache | userName : {}",key);
 			return otpCache.get(key);
 		}
 		catch (Exception e) {
-			log.debug("Otp not found in the Otp Cache for the user : "+key);
-			log.warn("Unable to find otp for the user : "+key, e.getMessage());
+			log.error("Unable to find otp | userName:{} ",key,e);
 			return 0;
 		}
 	}
 	
 	public void clearOTP(String key) {
-		log.debug("Remove otp from the otp cache for the user : "+key);
+		log.debug("Clear otp from the otp cache | userName:{} "+key);
 		otpCache.invalidate(key);
 	}
 

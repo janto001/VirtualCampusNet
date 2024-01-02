@@ -37,6 +37,7 @@ import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 import com.quasarix.virtual_campus.dao.ds1.repository.ConfigParameterrepository;
 import com.quasarix.virtual_campus.dao.ds1.repository.RolePermissionRepository;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,32 +53,43 @@ public class CacheInitializer {
 	@Autowired
 	private ConfigParameterrepository configParameterrepository;
 	
-	@SuppressWarnings("static-access")
-	@EventListener(ContextRefreshedEvent.class)
-	public void run() {
-
-		List<RolePermission> rolepermission = rolePermissionRepository.findAll();
-		if (rolepermission.isEmpty()) {
-			log.debug("Roles and permissions are not found in role_permission table");
-		}
-		else {
-			AppCache.rolePermissionCache.setRoleAndPermissionCache(rolepermission);
-			log.info("Roles and permissions are added to the rolepermissionCache,  : " + RolePermissionCache.class);
-		}
+	@PostConstruct
+	private void initlizeCache() {
+		loadCache();
+	}
+	
+	public void loadCache() {
+		loadConfigParam();
+		loadRolesAndPermissions();
+	}
+	public void loadConfigParam(){
 		List<ConfigParameter> globalVariables = configParameterrepository.findAll();
 		if (!globalVariables.isEmpty()) {
 			Map<String, ConfigParameter> setValuesToMap = new HashMap<String, ConfigParameter>();
 			globalVariables.forEach(value -> {
 				setValuesToMap.put(value.getParameterName(), value);
 			});
-			AppCache.globalCache.setGlobalVariableCache(setValuesToMap);
-			log.info("Global variables are added to the Global variable cache, : " + GlobalVariableCache.class);
+			AppCache.setConfigParameter(setValuesToMap);
+			log.info("Config parameters are added to the cach");
 		}
 		else {
-			log.warn("Unable to add Global variables to the Global variable cache, : " + GlobalVariableCache.class);
+			log.warn("Unable to add config parameters to the cache");
 		}
-
 	}
+	
+	
+	public void loadRolesAndPermissions(){
 
+		List<RolePermission> rolepermission = rolePermissionRepository.findAll();
+		if (rolepermission.isEmpty()) {
+			log.warn("Unable to fetch roles and permission from RolePermissionRepository");
+		}
+		else {
+			AppCache.setRolesAndPermissions(rolepermission);
+			log.info("Roles and permissions are added to the cache");
+		}
+		
+	}
+	
 }
 

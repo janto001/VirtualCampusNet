@@ -112,7 +112,6 @@ public class AuthController {
 	public ResponseEntity<?> sendMsisdnOtp(@Valid
 	@RequestBody
 	OtpRequest otpRequest) {
-		log.info("msisdn otp request|userName:{}", otpRequest.getMsisdn());
 		log.debug("msisdn otp request|userName:{}", otpRequest.getMsisdn());
 		OtpResponse otpResponse = authService.sendMsisdnOtp(otpRequest);
 		if (otpResponse.isSuccess()) {

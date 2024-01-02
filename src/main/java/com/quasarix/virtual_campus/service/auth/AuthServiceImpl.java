@@ -41,9 +41,9 @@ import com.quasarix.virtual_campus.dto.login.OtpRequest;
 import com.quasarix.virtual_campus.dto.login.OtpResponse;
 import com.quasarix.virtual_campus.dto.login.SignupRequest;
 import com.quasarix.virtual_campus.security.jwt.JwtUtils;
-import com.quasarix.virtual_campus.security.services.UserDetailsImpl;
+import com.quasarix.virtual_campus.security.services.UserDetailsAndOidcUserImpl;
 import com.quasarix.virtual_campus.service.otp.OtpService;
-import com.quasarix.virtual_campus.service.otp.ThirdPartySMSService;
+import com.quasarix.virtual_campus.service.otp.SmsSendService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -55,50 +55,41 @@ public class AuthServiceImpl implements AuthService {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-
 	@Autowired
 	private JwtUtils jwtUtils;
-
 	@Autowired
 	private JavaMailSender javaMailSender;
-
 	@Autowired
 	private UserLogin userLogin;
-
 	@Autowired
 	private UserProfile userProfile;
-
 	@Autowired
 	private UserLoginRepository userLoginRepository;
-
 	@Autowired
 	private UserProfileRepository userProfileRepository;
-
 	@Autowired
 	private PasswordEncoder encoder;
-
 	@Autowired
 	private OtpService OtpService;
 	@Autowired
-	private ThirdPartySMSService smsService;
+	private SmsSendService smsService;
 
-	@SuppressWarnings("static-access")
 	@Override
 	public LoginResponse populateLoginResponse(LoginRequest loginRequest) {
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		UserDetailsAndOidcUserImpl userDetails = (UserDetailsAndOidcUserImpl) authentication.getPrincipal();
 		List<String> authorities = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
 		UserLogin userLogin = userLoginRepository.findUserByUserName(loginRequest.getUsername());
 		Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 		if (userLogin.getLoginAttempts() >= Integer
-				.parseInt(AppCache.globalCache.getGlobalVariableCache().get("MaximumAttempts").getParameterValue())) {
+				.parseInt(AppCache.getConfigParameter().get("MaximumAttempts").getParameterValue())) {
 			userLogin.setIsLocked(1);
 		}
-		if (userLogin.getLoginAttempts() >= Integer.parseInt(AppCache.globalCache.getGlobalVariableCache().get("MaximumAttempts").getParameterValue())
-				&& (isTwelveHoursDifference(currentTimestamp, userLogin.getLastLogin()))) {
+		if (userLogin.getLoginAttempts() >= Integer.parseInt(AppCache.getConfigParameter().get("MaximumAttempts").getParameterValue())
+				&& (hoursDifference(currentTimestamp, userLogin.getLastLogin()))==Long.parseLong(AppCache.getConfigParameter().get("hoursDifferent").getParameterValue())) {
 			userLogin.setIsLocked(0);
 			userLogin.setLoginAttempts(0);
 		}
@@ -106,31 +97,32 @@ public class AuthServiceImpl implements AuthService {
 		userLogin.setLastLogin(currentTimestamp);
 		try {
 			userLoginRepository.save(userLogin);
+			log.debug("last_login and Login_Attemps columns are updated | userName:{}",loginRequest.getUsername());
 		}
 		catch (Exception ex) {
-			log.info("Error occure while update last_login and Login_Attemps columns");
-			log.warn("Error occure while update last_login and Login_Attemps columns", ex);
+			log.error("Error occure while update last_login and Login_Attemps columns", ex);
 			return new LoginResponse(false, String.valueOf(HttpStatus.BAD_REQUEST), "Sign in failed");
 		}
 
-		log.info("User Login succes.");
-		log.debug("User Login succes. ; user_name : " + loginRequest.getUsername());
+		log.debug("User Login succes | userName:{}" + loginRequest.getUsername());
 		return new LoginResponse(jwt, authorities, true, String.valueOf(HttpStatus.OK), "Sign in success");
 	}
 
-	private boolean isTwelveHoursDifference(Timestamp timestamp1, Timestamp timestamp2) {
+	private long hoursDifference(Timestamp timestamp1, Timestamp timestamp2) {
 		long difference = Math.abs(timestamp1.getTime() - timestamp2.getTime());
 		long differenceInHours = difference / (60 * 60 * 1000);
-		return differenceInHours == 12;
+		return differenceInHours;
 	}
 
 	@Override
 	public LoginResponse populateSignupResponse(SignupRequest signupRequest) {
 		if (!jwtUtils.getUserNameFromJwtToken(signupRequest.getAuthentication()).equals(signupRequest.getUsername())) {
+			log.warn("Un-verified user name | userName:{}",signupRequest.getUsername());
 			return new LoginResponse(false, String.valueOf(HttpStatus.UNAUTHORIZED), "Please enter the verified user name");
 		}
 
 		if (userLoginRepository.existsByUserName(signupRequest.getUsername())) {
+			log.warn("User is already exist | userName:{}",signupRequest.getUsername());
 			return new LoginResponse(false, String.valueOf(HttpStatus.FORBIDDEN), "User is already exist, please login");
 		}
 		userProfile.setFirstName(signupRequest.getFirstName());
@@ -141,7 +133,7 @@ public class AuthServiceImpl implements AuthService {
 			userProfile.setBirthDate(birthDate);
 		}
 		catch (ParseException e) {
-			log.warn("unabe to parse birthDade", e);
+			log.error("unabe to parse date of birth | userName:{}",signupRequest.getUsername(), e);
 		}
 		Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 		userProfile.setGender(signupRequest.getGender());
@@ -166,41 +158,38 @@ public class AuthServiceImpl implements AuthService {
 				userLogin.setUserId(profileId);
 			}
 			userLoginRepository.save(userLogin);
-			log.info("Successfylly save user details in database");
+			log.debug("User profile table created | userName:{}",signupRequest.getUsername());
 		}
 		catch (Exception e) {
-			log.info("Faild to save user details in database");
-			log.debug("Faild to save user details in database for the user " + signupRequest.getUsername());
-			return new LoginResponse(false, String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR), "Unable to create the user in database..!");
+			log.error("Unable to create the user in database",e);
+			return new LoginResponse(false, String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR), "Unable to create the user in database");
 		}
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(signupRequest.getUsername(), signupRequest.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+		UserDetailsAndOidcUserImpl userDetails = (UserDetailsAndOidcUserImpl) authentication.getPrincipal();
 		List<String> authorities = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
-		log.info("Signup Success");
-		log.debug("Signup Success - userName : " + signupRequest.getUsername());
+		log.info("Signup Success | userName:{} " + signupRequest.getUsername());
 		return new LoginResponse(jwt, authorities, true, String.valueOf(HttpStatus.OK), "Signup success");
 	}
 
-	@SuppressWarnings("static-access")
 	@Override
 	public OtpResponse sendEmailOtp(OtpRequest otpRequest) {
 
 		try {
 			int otp = OtpService.generateOTP(otpRequest.getEmail());
 			SimpleMailMessage msg = new SimpleMailMessage();
-			msg.setFrom(AppCache.globalCache.getGlobalVariableCache().get("mailId").getParameterValue());
+			msg.setFrom(AppCache.getConfigParameter().get("mailId").getParameterValue());
 			msg.setTo(otpRequest.getEmail());
 			msg.setSubject("OTP verification");
 			msg.setText("Your OTP is : " + otp);
 			javaMailSender.send(msg);
-			log.debug("Successfully send OTP to the mail Id : " + otpRequest.getEmail());
+			log.info("Successfully send email OTP | mailId:{}",otpRequest.getEmail());
 			return new OtpResponse(true, "Otp send to the mail", String.valueOf(HttpStatus.OK));
 		}
 		catch (Exception e) {
-			log.debug("Failed send OTP to the mail Id : " + otpRequest.getEmail());
+			log.error("Failed to send email OTP | mailId:{}" + otpRequest.getEmail());
 			return new OtpResponse(false, "Otp Can't send to the mail", String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
@@ -212,10 +201,10 @@ public class AuthServiceImpl implements AuthService {
 		if (otpRequest.getOtp().equals(intToStringOtp)) {
 			OtpService.clearOTP(otpRequest.getEmail());
 			String jwt = jwtUtils.generateJwtToken(otpRequest.getEmail());
-			log.debug("Email OTP is verified to the user : " + otpRequest.getEmail());
+			log.info("Email OTP is verified | userName:{}" + otpRequest.getEmail());
 			return new OtpResponse(true, "Email OTP is verified", String.valueOf(HttpStatus.OK), jwt);
 		}
-		log.debug("Failed to validate OTP to the mail Id : " + otpRequest.getEmail());
+		log.info("Failed to validate OTP | userName:{}" + otpRequest.getEmail());
 		return new OtpResponse(false, "Email OTP is invalid", String.valueOf(HttpStatus.UNAUTHORIZED));
 	}
 
@@ -224,11 +213,11 @@ public class AuthServiceImpl implements AuthService {
 		try {
 			int otp = OtpService.generateOTP(otpRequest.getMsisdn());
 			smsService.sendSMS(String.valueOf(otp), otpRequest.getMsisdn());
-			log.debug("OTP is send to the phone number : " + otpRequest.getMsisdn());
+			log.info("MSISDN OTP is send | msisdnNmber:{}" + otpRequest.getMsisdn());
 			return new OtpResponse(true, "OTP is send to the phone number", String.valueOf(HttpStatus.OK));
 		}
 		catch (Exception ex) {
-			log.debug("Unable to sent otp to the given nuber : " + otpRequest.getMsisdn(), ex.getMessage());
+			log.error("Unable to sent otp | msisdnNuber:{} ",otpRequest.getMsisdn(),ex);
 			return new OtpResponse(false, "unable to sent otp to the given nuber", String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
@@ -239,11 +228,10 @@ public class AuthServiceImpl implements AuthService {
 		if (otpRequest.getOtp().equals(intToStringOtp)) {
 			OtpService.clearOTP(otpRequest.getMsisdn());
 			String jwt = jwtUtils.generateJwtToken(otpRequest.getMsisdn());
-			log.debug("Failed send OTP to the Msisdn : " + otpRequest.getMsisdn());
+			log.info("msisdn OTP is verified | msisdnNumber:{}" + otpRequest.getMsisdn());
 			return new OtpResponse(true, "SMS OTP is verified", String.valueOf(HttpStatus.OK), jwt);
 		}
-		log.warn("Faild to send OTP to the Msisdn : " + otpRequest.getMsisdn());
-		log.debug("Failed send OTP to the Msisdn : " + otpRequest.getMsisdn());
+		log.info("Failed to validate msisdn OTP | msisdnNumber:{}",otpRequest.getMsisdn());
 		return new OtpResponse(false, "Invalid SMS-OTP", String.valueOf(HttpStatus.UNAUTHORIZED));
 	}
 }
