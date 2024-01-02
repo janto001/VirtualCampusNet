@@ -23,11 +23,14 @@
  */
 package com.quasarix.virtual_campus.security.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import com.quasarix.virtual_campus.dao.ds1.model.UserLogin;
+import com.quasarix.virtual_campus.dao.ds1.repository.UserLoginRepository;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +42,22 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService{
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+	@Autowired
+	UserLoginRepository userLoginRepository;
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,NullPointerException {
+		try {
+			UserLogin userProfile = userLoginRepository.findUserByUserName(username);
+			log.debug("load user by username :{}", username);
+			return UserDetailsImpl.build(userProfile);
+		}
+		catch (Exception ex) {
+			throw new UsernameNotFoundException(ex.getMessage());
+		}
 	}
-
 }
 

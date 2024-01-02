@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: OtpServiceImplementation.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,65 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.service.otp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import org.springframework.stereotype.Service;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.quasarix.virtual_campus.cache.AppCache;
+
+import lombok.extern.slf4j.Slf4j;
+
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+@Slf4j
+@Service
+public class OtpServiceImpl implements OtpService {
+	
+	private static final Integer EXPIRE_MINS = Integer.parseInt(AppCache.getConfigParameter().get("OTPExpireTime").getParameterValue());
+	private LoadingCache<String, Integer> otpCache;
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+	public OtpServiceImpl() {
+		super();
+		otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
+			public Integer load(String key) {
+				return 0;
+			}
+		});
+	}
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	@Override
+	public int generateOTP(String key) {
+		Random random = new Random();
+		int otp = 100000 + random.nextInt(900000);
+		otpCache.put(key, otp);
+		log.debug("Otp generated | userName:{} ",key);
+		return otp;
+	}
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
+	@Override
+	public int getOtp(String key) {
+		try {
+			log.debug("Getting otp from otpCache | userName : {}",key);
+			return otpCache.get(key);
+		}
+		catch (Exception e) {
+			log.error("Unable to find otp | userName:{} ",key,e);
+			return 0;
+		}
+	}
+	
+	public void clearOTP(String key) {
+		log.debug("Clear otp from the otp cache | userName:{} "+key);
+		otpCache.invalidate(key);
+	}
 
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+	
 }
 

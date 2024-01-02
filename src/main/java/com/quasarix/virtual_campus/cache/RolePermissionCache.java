@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: RolePermissionCache.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,27 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.cache;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.List;
+import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+public class RolePermissionCache {
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+	private static List<RolePermission> roleAndPermissionCache;
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	public static List<RolePermission> getRoleAndPermissionCache() {
+		return roleAndPermissionCache;
+	}
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
+	public static void setRoleAndPermissionCache(List<RolePermission> roleAndPermissionCache) {
+		RolePermissionCache.roleAndPermissionCache = roleAndPermissionCache;
+	}
 
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+	
 }
 

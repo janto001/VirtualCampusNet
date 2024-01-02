@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: AppCache.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,41 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.cache;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
+import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+public class AppCache {
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+	private static Map<String, ConfigParameter> configParameter;
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	private static List<RolePermission> rolesAndPermissions;
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
+	public static Map<String, ConfigParameter> getConfigParameter() {
+		return configParameter;
+	}
 
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
+	public static void setConfigParameter(Map<String, ConfigParameter> configParameter) {
+		AppCache.configParameter = configParameter;
+	}
 
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
+	public static List<RolePermission> getRolesAndPermissions() {
+		return rolesAndPermissions;
+	}
 
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+	public static void setRolesAndPermissions(List<RolePermission> rolesAndPermissions) {
+		AppCache.rolesAndPermissions = rolesAndPermissions;
+	}
+	
 }
 

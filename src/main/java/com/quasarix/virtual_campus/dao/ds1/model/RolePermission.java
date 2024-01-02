@@ -23,7 +23,11 @@
  */
 package com.quasarix.virtual_campus.dao.ds1.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -39,14 +43,24 @@ import lombok.Setter;
 @Entity
 @Table(name = "role_permission")
 public class RolePermission {
-	@Id
-	@ManyToOne
-	@JoinColumn(name = "role_id", referencedColumnName = "role_id")
-	private UserRole role;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "Id")
+	private Long id;
+
+	@Column(name = "role_id")
+	private Long roleId;
+
+	@Column(name = "permission_id")
+	private Long permissionId;
+
 	@ManyToOne
-	@JoinColumn(name = "permission_id", referencedColumnName = "permission_id")
-	private UserPermission permission;
+	@JoinColumn(name = "permission_id", insertable = false, updatable = false)
+	private UserPermission userPermission;
+
+	@ManyToOne
+	@JoinColumn(name = "role_id", insertable = false, updatable = false)
+	private UserRole userRole;
 }
 

@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: AuthService.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,28 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.service.auth;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import com.quasarix.virtual_campus.dto.login.LoginRequest;
+import com.quasarix.virtual_campus.dto.login.LoginResponse;
+import com.quasarix.virtual_campus.dto.login.OtpRequest;
+import com.quasarix.virtual_campus.dto.login.OtpResponse;
+import com.quasarix.virtual_campus.dto.login.SignupRequest;
 
 /**
  * @author anto.jayaraj
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
+public interface AuthService {
+	public LoginResponse populateLoginResponse(LoginRequest loginRequest);
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+	public LoginResponse populateSignupResponse(SignupRequest signupRequest);
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+	public OtpResponse sendEmailOtp(OtpRequest otpRequest);
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	public OtpResponse sendMsisdnOtp(OtpRequest otpRequest);
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
+	public OtpResponse validateEmailOtp(OtpRequest otpRequest);
 
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+	public OtpResponse validateMsisdnOtp(OtpRequest otpRequest);
 }
 

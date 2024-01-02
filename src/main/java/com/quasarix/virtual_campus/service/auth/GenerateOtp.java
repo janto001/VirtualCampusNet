@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: OtpService.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,62 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.service.auth;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+
+import org.springframework.stereotype.Service;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
+@Service
+public class GenerateOtp {
+	private static final Integer EXPIRE_MINS = 2;
+	private LoadingCache<String, Integer> otpCache;
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+	public GenerateOtp() {
+		super();
+		otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
+			public Integer load(String key) {
+				return 0;
+			}
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+		});
+	}
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	public int generateOTP(String key) {
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
+		Random random = new Random();
+		int otp = 100000 + random.nextInt(900000);
+		otpCache.put(key, otp);
 
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
+		return otp;
 
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
+	}
 
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
+	public int getOtp(String key) {
+		try {
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
+			return otpCache.get(key);
+		}
+		catch (Exception e) {
 
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+			return 0;
+		}
+	}
+
+	public void clearOTP(String key) {
+
+		otpCache.invalidate(key);
+	}
+
 }
 
