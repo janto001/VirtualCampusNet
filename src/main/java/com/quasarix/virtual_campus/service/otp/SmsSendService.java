@@ -21,10 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.quasarix.virtual_campus.cache.AppCache;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author ARUN A J
  */
 @Service
+@Slf4j
 public class SmsSendService {
 	
 	@Autowired
@@ -49,6 +52,7 @@ public class SmsSendService {
 			paramValue.add(number);
 			String url = setURL(rootUrl, param, paramValue);
 			httpsConnection.getConnection(url);
+			log.info("OTP send successfully.");
 	}
 
 	public String setURL(String root, List<String> parameter, List<String> parameterValue) throws Exception {

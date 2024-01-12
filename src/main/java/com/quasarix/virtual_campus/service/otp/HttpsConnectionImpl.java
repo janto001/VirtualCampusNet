@@ -58,12 +58,11 @@ public class HttpsConnectionImpl implements HttpsConnection {
 			}
 			response.append(line);
 		}
-		log.info("OTP send successfully.");
-		log.debug("MSISDN OTP sent successfully | URL : ",url);
+		log.debug("Connection successfully created | URL : ",url);
 		return true;
 	}
 	catch (Exception e) {
-		log.error("Failed to send MSISDN OTP", e);
+		log.error("Failed to create a connection to the URL "+URL, e);
 	}
 		return false;
 	}

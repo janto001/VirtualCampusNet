@@ -26,17 +26,12 @@ package com.quasarix.virtual_campus.cache;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
 import com.quasarix.virtual_campus.dao.ds1.model.RolePermission;
 import com.quasarix.virtual_campus.dao.ds1.repository.ConfigParameterrepository;
 import com.quasarix.virtual_campus.dao.ds1.repository.RolePermissionRepository;
-
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,21 +54,21 @@ public class CacheInitializer {
 	}
 	
 	public void loadCache() {
-		loadConfigParam();
+		loadConfigurationParameters();
 		loadRolesAndPermissions();
 	}
-	public void loadConfigParam(){
-		List<ConfigParameter> globalVariables = configParameterrepository.findAll();
-		if (!globalVariables.isEmpty()) {
+	public void loadConfigurationParameters(){
+		List<ConfigParameter> configParameterValues = configParameterrepository.findAll();
+		if (!configParameterValues.isEmpty()) {
 			Map<String, ConfigParameter> setValuesToMap = new HashMap<String, ConfigParameter>();
-			globalVariables.forEach(value -> {
+			configParameterValues.forEach(value -> {
 				setValuesToMap.put(value.getParameterName(), value);
 			});
 			AppCache.setConfigParameter(setValuesToMap);
-			log.info("Config parameters are added to the cach");
+			log.info("Configuration parameters are added to the AppCache");
 		}
 		else {
-			log.warn("Unable to add config parameters to the cache");
+			log.warn("Unable to add configuration parameters to the AppCache");
 		}
 	}
 	
@@ -86,7 +81,7 @@ public class CacheInitializer {
 		}
 		else {
 			AppCache.setRolesAndPermissions(rolepermission);
-			log.info("Roles and permissions are added to the cache");
+			log.info("Roles and permissions are added to the AppCache");
 		}
 		
 	}

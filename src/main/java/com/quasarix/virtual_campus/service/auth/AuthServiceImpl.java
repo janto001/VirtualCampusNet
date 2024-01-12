@@ -97,10 +97,10 @@ public class AuthServiceImpl implements AuthService {
 		userLogin.setLastLogin(currentTimestamp);
 		try {
 			userLoginRepository.save(userLogin);
-			log.debug("last_login and Login_Attemps columns are updated | userName:{}",loginRequest.getUsername());
+			log.debug("last_login and Login_Attemps columns for user_login table are updated | userName:{}",loginRequest.getUsername());
 		}
 		catch (Exception ex) {
-			log.error("Error occure while update last_login and Login_Attemps columns", ex);
+			log.error("Error occure while update last_login and Login_Attemps columns for user_login table", ex);
 			return new LoginResponse(false, String.valueOf(HttpStatus.BAD_REQUEST), "Sign in failed");
 		}
 
@@ -117,12 +117,12 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public LoginResponse populateSignupResponse(SignupRequest signupRequest) {
 		if (!jwtUtils.getUserNameFromJwtToken(signupRequest.getAuthentication()).equals(signupRequest.getUsername())) {
-			log.warn("Un-verified user name | userName:{}",signupRequest.getUsername());
+			log.info("Un-verified user name | userName:{}",signupRequest.getUsername());
 			return new LoginResponse(false, String.valueOf(HttpStatus.UNAUTHORIZED), "Please enter the verified user name");
 		}
 
 		if (userLoginRepository.existsByUserName(signupRequest.getUsername())) {
-			log.warn("User is already exist | userName:{}",signupRequest.getUsername());
+			log.info("User is already exist | userName:{}",signupRequest.getUsername());
 			return new LoginResponse(false, String.valueOf(HttpStatus.FORBIDDEN), "User is already exist, please login");
 		}
 		userProfile.setFirstName(signupRequest.getFirstName());
@@ -189,16 +189,14 @@ public class AuthServiceImpl implements AuthService {
 			return new OtpResponse(true, "Otp send to the mail", String.valueOf(HttpStatus.OK));
 		}
 		catch (Exception e) {
-			log.error("Failed to send email OTP | mailId:{}" + otpRequest.getEmail());
+			log.error("Failed to send email OTP | mailId:{}" + otpRequest.getEmail(),e);
 			return new OtpResponse(false, "Otp Can't send to the mail", String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR));
 		}
 	}
 
 	@Override
 	public OtpResponse validateEmailOtp(OtpRequest otpRequest) {
-
-		String intToStringOtp = Integer.toString(OtpService.getOtp(otpRequest.getEmail()));
-		if (otpRequest.getOtp().equals(intToStringOtp)) {
+		if (OtpService.validateOTP(otpRequest.getEmail(), otpRequest.getOtp())) {
 			OtpService.clearOTP(otpRequest.getEmail());
 			String jwt = jwtUtils.generateJwtToken(otpRequest.getEmail());
 			log.info("Email OTP is verified | userName:{}" + otpRequest.getEmail());
@@ -224,8 +222,7 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public OtpResponse validateMsisdnOtp(OtpRequest otpRequest) {
-		String intToStringOtp = Integer.toString(OtpService.getOtp(otpRequest.getMsisdn()));
-		if (otpRequest.getOtp().equals(intToStringOtp)) {
+		if (OtpService.validateOTP(otpRequest.getMsisdn(),otpRequest.getOtp())) {
 			OtpService.clearOTP(otpRequest.getMsisdn());
 			String jwt = jwtUtils.generateJwtToken(otpRequest.getMsisdn());
 			log.info("msisdn OTP is verified | msisdnNumber:{}" + otpRequest.getMsisdn());
