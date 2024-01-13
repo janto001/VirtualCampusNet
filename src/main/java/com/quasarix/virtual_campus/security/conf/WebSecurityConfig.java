@@ -28,78 +28,106 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
-import com.quasarix.virtual_campus.security.jwt.AuthEntryPointJwt;
 import com.quasarix.virtual_campus.security.jwt.AuthTokenFilter;
 import com.quasarix.virtual_campus.security.oauth.CustomOAuth2UserService;
-import com.quasarix.virtual_campus.security.oauth.OAuth2AuthenticationFailureHandler;
 import com.quasarix.virtual_campus.security.oauth.OAuth2AuthenticationSuccessHandler;
-import com.quasarix.virtual_campus.security.services.UserDetailsServiceImpl;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
-	@Autowired
-    private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
-    
-    @Autowired
+	@Autowired
+	private UserDetailsService userDetailsService;
+
+	@Autowired
 	private CustomOAuth2UserService customOAuth2UserService;
 
 	@Autowired
 	private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
-	@Autowired
-	private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
-	 @Bean
-		public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	@Bean
+	public AuthTokenFilter authenticationJwtTokenFilter() {
+		return new AuthTokenFilter();
+	}
 
-			return http.csrf(csrf -> csrf.disable())
-					.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
-					.exceptionHandling(exp -> exp.authenticationEntryPoint(unauthorizedHandler))
-					.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-					.authenticationProvider(authenticationProvider())
-					.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-					.build();
-		}
-    @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter();
-    }
-    
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-         
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-     
-        return authProvider;
-    }
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+		authProvider.setUserDetailsService(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-      return authConfig.getAuthenticationManager();
-    }
+		return authProvider;
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public AuthenticationSuccessHandler myAuthenticationSuccessHandler() {
+		return new OAuth2AuthenticationSuccessHandler();
+	}
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+		http.httpBasic(Customizer.withDefaults()).oauth2Login(Customizer.withDefaults()).authorizeHttpRequests(auth -> {
+			auth.requestMatchers("/oauth/**").authenticated().anyRequest().permitAll();
+		});
+
+		http.oauth2Login(Customizer.withDefaults());
+
+		http.oauth2Login(OAuth -> {
+			OAuth.userInfoEndpoint(uie -> {
+				uie.oidcUserService(customOAuth2UserService);
+			});
+			OAuth.successHandler(oAuth2AuthenticationSuccessHandler);
+		});
+
+		http.csrf(AbstractHttpConfigurer::disable);
+		http.authenticationProvider(authenticationProvider());
+		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
 }
 

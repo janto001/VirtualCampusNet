@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: GlobalVariableCache.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,29 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.cache;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+
+import java.util.Map;
+import org.springframework.stereotype.Component;
+import com.quasarix.virtual_campus.dao.ds1.model.ConfigParameter;
+
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
+@Component
+public class GlobalVariableCache {
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
+	private static Map<String, ConfigParameter> globalVariableCache;
 
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
+	public static Map<String, ConfigParameter> getGlobalVariableCache() {
+		return globalVariableCache;
+	}
 
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
+	public static void setGlobalVariableCache(Map<String, ConfigParameter> globalVariableCache) {
+		GlobalVariableCache.globalVariableCache = globalVariableCache;
+	}
 
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
-
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
 }
 

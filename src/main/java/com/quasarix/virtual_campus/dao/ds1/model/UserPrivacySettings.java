@@ -23,7 +23,11 @@
  */
 package com.quasarix.virtual_campus.dao.ds1.model;
 
+import java.util.List;
+
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -41,14 +45,18 @@ import lombok.Setter;
 @Table(name = "user_privacy_settings")
 public class UserPrivacySettings {
 	@Id
-	@Column(name = "user_id")
-	private int userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
-	@Column(name = "public_fields", columnDefinition = "JSON")
-	private String publicFields;
-	
-	@Column(name = "private_fields", columnDefinition = "JSON")
-	private String privateFields;
+	@ElementCollection
+	@CollectionTable(name = "public_fields", joinColumns = @JoinColumn(name = "user_id"))
+	@Column(name = "field")
+	private List<String> publicFields;
+
+	@ElementCollection
+	@CollectionTable(name = "private_fields", joinColumns = @JoinColumn(name = "user_id"))
+	@Column(name = "field")
+	private List<String> privateFields;
 
 	@OneToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")

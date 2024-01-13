@@ -45,30 +45,30 @@ import lombok.Setter;
 @Table(name = "user_login")
 public class UserLogin {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "login_id")
-    private int loginId;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "login_id", nullable = false)
+	private Long loginId;
 
-    @Column(name = "user_id")
-    private int userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
-    @Column(name = "user_name", length = 50, nullable = false)
-    private String userName;
+	@Column(name = "user_name", length = 50, nullable = false)
+	private String userName;
 
-    @Column(name = "password", length = 255, nullable = false)
-    private String password;
+	@Column(name = "password", length = 255, nullable = false)
+	private String password;
 
-    @Column(name = "last_login")
-    private Timestamp lastLogin;
+	@Column(name = "last_login")
+	private Timestamp lastLogin;
 
-    @Column(name = "login_attempts", nullable = false)
-    private int loginAttempts;
+	@Column(name = "login_attempts", nullable = false)
+	private int loginAttempts;
 
-    @Column(name = "is_locked", nullable = false)
-    private int isLocked;
+	@Column(name = "is_locked", nullable = false)
+	private int isLocked;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-    private UserProfile userProfile;
+	@ManyToOne
+	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
+	private UserProfile userProfile;
 }
 

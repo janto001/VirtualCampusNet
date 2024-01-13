@@ -23,14 +23,19 @@
  */
 package com.quasarix.virtual_campus.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.quasarix.virtual_campus.dto.login.LoginRequest;
-
+import com.quasarix.virtual_campus.dto.login.LoginResponse;
+import com.quasarix.virtual_campus.dto.login.OtpRequest;
+import com.quasarix.virtual_campus.dto.login.OtpResponse;
+import com.quasarix.virtual_campus.dto.login.SignupRequest;
+import com.quasarix.virtual_campus.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,13 +46,95 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-	@PostMapping("/signin")
+	@Autowired
+	private AuthService authService;
+
+	@PostMapping("/login")
 	public ResponseEntity<?> authenticateUser(@Valid
 	@RequestBody
 	LoginRequest loginRequest) {
 		log.debug("login request|userName:{}", loginRequest.getUsername());
-		return null;
-
+		LoginResponse loginResponse = authService.populateLoginResponse(loginRequest);
+		if (loginResponse.isSuccess()) {
+			return new ResponseEntity<>(loginResponse, HttpStatus.OK);
+		}
+		else if (loginResponse.getStatusCode().equalsIgnoreCase(Integer.toString(HttpStatus.UNAUTHORIZED.value()))) {
+			return new ResponseEntity<>(loginResponse, HttpStatus.UNAUTHORIZED);
+		}
+		else {
+			return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
+		}
 	}
+
+	@PostMapping("/signup")
+	public ResponseEntity<?> createUser(@Valid
+	@RequestBody
+	SignupRequest signUpRequest) {
+		log.debug("signup request|userName:{}", signUpRequest.getUsername());
+		LoginResponse loginResponse = authService.populateSignupResponse(signUpRequest);
+		if (loginResponse.isSuccess()) {
+			return new ResponseEntity<>(loginResponse, HttpStatus.CREATED);
+		}
+		else {
+			return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/sendEmailOtp")
+	public ResponseEntity<?> sendEmailOtp(@Valid
+	@RequestBody
+	OtpRequest otpRequest) {
+		log.debug("email otp request|userName:{}", otpRequest.getEmail());
+		OtpResponse otpResponse = authService.sendEmailOtp(otpRequest);
+		if (otpResponse.isSuccess()) {
+			return new ResponseEntity<>(otpResponse, HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/validateEmailOtp")
+	public ResponseEntity<?> validateEmailOtp(@Valid
+	@RequestBody
+	OtpRequest otpRequest) {
+		log.debug("email otp validation request|userName:{}", otpRequest.getEmail());
+		OtpResponse otpResponse = authService.validateEmailOtp(otpRequest);
+		if (otpResponse.isSuccess()) {
+			return new ResponseEntity<>(otpResponse, HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/sendMsisdnOtp")
+	public ResponseEntity<?> sendMsisdnOtp(@Valid
+	@RequestBody
+	OtpRequest otpRequest) {
+		log.debug("msisdn otp request|userName:{}", otpRequest.getMsisdn());
+		OtpResponse otpResponse = authService.sendMsisdnOtp(otpRequest);
+		if (otpResponse.isSuccess()) {
+			return new ResponseEntity<>(otpResponse, HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/validateMsisdnOtp")
+	public ResponseEntity<?> validateMsisdnOtp(@Valid
+	@RequestBody
+	OtpRequest otpRequest) {
+		log.debug("msisdn otp validation request|userName:{}", otpRequest.getEmail());
+		OtpResponse otpResponse = authService.validateMsisdnOtp(otpRequest);
+		if (otpResponse.isSuccess()) {
+			return new ResponseEntity<>(otpResponse, HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>(otpResponse, HttpStatus.BAD_REQUEST);
+		}
+	}
+
 }
 

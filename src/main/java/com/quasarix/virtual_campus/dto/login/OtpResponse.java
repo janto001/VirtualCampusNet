@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: OtpResponse.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,16 +21,10 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.dto.login;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,41 +33,11 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
-
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
-
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
-
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
-
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
-
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class OtpResponse {
+	private boolean success;
+	private String message;
+	private String statusCode;
+	private String authentication;
 }
 

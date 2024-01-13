@@ -44,11 +44,11 @@ import lombok.Setter;
 public class TeachersSchoolRecord {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "record_id")
-	private int recordId;
+	@Column(name = "record_id", nullable = false)
+	private Long recordId;
 
-	@Column(name = "user_id")
-	private Integer userId;
+	@Column(name = "user_id", nullable = false)
+	private Long userId;
 
 	@Column(name = "joined_year")
 	private Integer joinedYear;
@@ -58,7 +58,7 @@ public class TeachersSchoolRecord {
 
 	@Column(name = "teached_division_Ids", columnDefinition = "JSON", nullable = false)
 	private String teachedDivisionIds;
-	
+
 	@Column(name = "teached_class_Ids", columnDefinition = "JSON", nullable = false)
 	private String teachedClassIds;
 

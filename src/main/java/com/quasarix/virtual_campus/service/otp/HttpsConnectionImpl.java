@@ -1,5 +1,5 @@
 /**
- * Filename: HigherEducationDetails.java
+ * Filename: HttpsConnectionImpl.java
  *
  * © Copyright 2023 Quasarix. ALL RIGHTS RESERVED.
 
@@ -21,59 +21,50 @@
  * prior, express written consent of Quasarix is strictly prohibited and may be in violation of applicable laws.
  *
  */
-package com.quasarix.virtual_campus.dao.ds1.model;
+package com.quasarix.virtual_campus.service.otp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author anto.jayaraj
+ * @author ARUN A J
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "higher_education_details")
-public class HigherEducationDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "education_id", nullable = false)
-    private Long educationId;
+@Service
+@Slf4j
+public class HttpsConnectionImpl implements HttpsConnection {
 
-	@Column(name = "user_id", nullable = false)
-	private Long userId;
-
-	@Column(name = "university_name", length = 100, nullable = false)
-	private String universityName;
-
-	@Column(name = "institution_name", length = 100, nullable = false)
-	private String institutionName;
-
-	@Column(name = "degree", length = 50, nullable = false)
-	private String degree;
-
-	@Column(name = "Field_of_study", length = 50, nullable = false)
-	private String fieldOfStudy;
-
-	@Column(name = "graduation_year", nullable = false)
-	private int graduationYear;
-
-	@Column(name = "school_id", nullable = false)
-	private int schoolId;
-
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id", insertable = false, updatable = false)
-	private UserProfile userProfile;
-
-	@ManyToOne
-	@JoinColumn(name = "school_id", referencedColumnName = "school_id", insertable = false, updatable = false)
-	private SchoolDetails schoolDetails;
+	@Override
+	public boolean getConnection(String URL) {
+		try {
+		String myUrl = URL;
+		URL url = new URL(myUrl);
+		HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+		con.setRequestMethod("GET");
+		con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		con.setRequestProperty("cache-control", "no-cache");
+		StringBuffer response = new StringBuffer();
+		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		while (true) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
+			response.append(line);
+		}
+		log.debug("Connection successfully created | URL : ",url);
+		return true;
+	}
+	catch (Exception e) {
+		log.error("Failed to create a connection to the URL "+URL, e);
+	}
+		return false;
+	}
 }
 
